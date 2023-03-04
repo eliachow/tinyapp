@@ -32,14 +32,25 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//create a new URL
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+
 app.post("/urls", (req, res) => {
-  console.log(req.body); //Log the POST request body to the console
-  res.send("OK"); //Responsd with 'OK' (this will be replaced)
+  const newURLID = generateRandomString();
+  urlDatabase[newURLID] = req.body.longURL;
+  res.redirect(`/urls/${newURLID}`);
 });
+
+
+app.get("/u/:id", (req, res) => {
+  const shortURL = req.params.id;
+  const longURL = urlDatabase[shortURL];
+  res.redirect(longURL);
+});
+
 
 app.get("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
