@@ -21,13 +21,13 @@
     <% if(username === undefined){ %>
       <form method="POST" action="/login">
         <input type="text" placeholder="Username" name="username">
-        <button type="submit">Submit</button>
+        <button type="submit">Login</button>
       </form>
     <% } else { %>
       <h5>
-        <%= username%>
+        <%=`Logged in as: ${username}`%>
       </h5>
-      <form>
+      <form method="POST" action="/logout">
         <button type="submit">Logout</button>
       </form>
       
