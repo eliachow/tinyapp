@@ -64,11 +64,9 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-//ocurring from URL edit && URL ID
+//updates longURL with edited input url
 app.post("/urls/:id", (req, res) => {
-  console.log("👉👉👉", req.body);
   const shortURL = req.params.id;
-  // const longURL =
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect("/urls");
 });
@@ -77,6 +75,11 @@ app.post("/urls/:id", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   const shortURL = req.params.id;
   delete urlDatabase[shortURL];
+  res.redirect("/urls");
+});
+
+app.post("/login", (req, res) => {
+  res.cookie('name', req.body.username);
   res.redirect("/urls");
 });
 
