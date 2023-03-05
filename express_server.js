@@ -1,9 +1,11 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; //default port 8080
+const cookieParser = require('cookie-parser');
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 
 function generateRandomString() {
   return Math.random().toString(36).substring(2,8);
@@ -33,13 +35,19 @@ app.get("/urls.json", (req, res) => {
 
 //renders table from urls_index template on /urls
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { 
+    urls: urlDatabase,
+    username: req.cookies["username"],
+  };
   res.render("urls_index", templateVars);
 });
 
 //create a new URL
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"],
+  }
+  res.render("urls_new", templateVars);
 });
 
 //creates random shortURL ID for input long URL
@@ -60,7 +68,10 @@ app.get("/u/:id", (req, res) => {
 //renders shortURL ID edit page
 app.get("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
-  const templateVars = { id: shortURL, longURL: urlDatabase[shortURL] };
+  const templateVars = { 
+    id: shortURL, longURL: urlDatabase[shortURL],
+    username: req.cookies["username"] 
+  };
   res.render("urls_show", templateVars);
 });
 
@@ -79,7 +90,8 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('name', req.body.username);
+  res.cookie('username', req.body.username);
+  console.log(req.cookies["username"])
   res.redirect("/urls");
 });
 
