@@ -37,9 +37,14 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-//create a new URL
+//render urls_new template
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
+});
+
+//render urls_register template
+app.get("/urls/register", (req, res) => {
+  res.render("urls_register");
 });
 
 //creates random shortURL ID for input long URL
