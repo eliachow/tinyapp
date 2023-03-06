@@ -28,17 +28,16 @@ const users = {
 };
 
 app.post("/urls/register", (req, res) => {
-  console.log("👉👉👉", req.body.password);
   const newUserID = generateRandomString();
   users[newUserID] = {
     id: newUserID,
     email: req.body.email,
     password: req.body.password,
   };
+  res.cookie("use_id", users[newUserID]);
+  console.log("👉👉👉", users);
   res.redirect(`/urls`);
 });
-
-console.log("👉👉👉", users);
 
 
 //renders hello on root page
