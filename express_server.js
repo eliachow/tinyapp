@@ -29,6 +29,7 @@ const users = {
   },
 };
 
+
 app.post("/urls/register", (req, res) => {
   const newUserID = generateRandomString();
   users[newUserID] = {
@@ -36,47 +37,45 @@ app.post("/urls/register", (req, res) => {
     email: req.body.email,
     password: req.body.password,
   };
-  res.cookie("use_id", users[newUserID]);
-  console.log("👉👉👉", users);
+  res.cookie("user_id", newUserID);
   res.redirect(`/urls`);
 });
-
-
-//renders hello on root page
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// //renders Hello World on hello page
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b><body></html>\n");
-// });
-
 //renders table from urls_index template on /urls
 app.get("/urls", (req, res) => {
+  const userID = users[req.cookies['user_id']]
+  console.log("userID: ", userID);
   const templateVars = {
     urls: urlDatabase,
     username: req.cookies["username"],
+    //userID output: { id: 'ti2ylu', email: 'test@example.com', password: 'newapssword' }
+    user: userID,
   };
   res.render("urls_index", templateVars);
 });
 
 //render urls_new template
 app.get("/urls/new", (req, res) => {
+  const userID = users[req.cookies['user_id']]
   const templateVars = {
     username: req.cookies["username"],
+    user: userID,
   };
   res.render("urls_new", templateVars);
 });
 
 //render urls_register template
 app.get("/urls/register", (req, res) => {
-  res.render("urls_register");
+  const userID = users[req.cookies['user_id']] 
+  const templateVars = {
+    username: req.cookies["username"],
+    user: userID,
+  }
+  res.render("urls_register", templateVars);
 });
 
 //creates random shortURL ID for input long URL
@@ -96,10 +95,12 @@ app.get("/u/:id", (req, res) => {
 
 //renders shortURL ID edit page
 app.get("/urls/:id", (req, res) => {
+  const userID = users[req.cookies['user_id']] 
   const shortURL = req.params.id;
   const templateVars = {
     id: shortURL, longURL: urlDatabase[shortURL],
-    username: req.cookies["username"]
+    username: req.cookies["username"],
+    user: userID,
   };
   res.render("urls_show", templateVars);
 });
@@ -127,6 +128,16 @@ app.post("/logout", (req, res) => {
   res.clearCookie('username', req.body.username);
   res.redirect("/urls");
 });
+
+// //renders hello on root page
+// app.get("/", (req, res) => {
+//   res.send("Hello!");
+// });
+
+// //renders Hello World on hello page
+// app.get("/hello", (req, res) => {
+//   res.send("<html><body>Hello <b>World</b><body></html>\n");
+// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
