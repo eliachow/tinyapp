@@ -25,7 +25,8 @@
       </form>
     <% } else { %>
       <h5>
-        <%=`Logged in as: ${user.email}`%>
+        <!-- Need to switch username to user.email once testing is complete. user.email causes code to break every time the server is restarted-->
+        <%=`Logged in as: ${username}`%> 
       </h5>
       <form method="POST" action="/logout">
         <button type="submit">Logout</button>

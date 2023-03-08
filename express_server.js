@@ -7,9 +7,6 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-function generateRandomString() {
-  return Math.random().toString(36).substring(2,8);
-}
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -29,17 +26,42 @@ const users = {
   },
 };
 
+function generateRandomString() {
+  return Math.random().toString(36).substring(2,8);
+}
+
+function getUserByEmail(regEmail) {
+  let findUser = null;
+  for (const user in users) {
+    if (users[user].email === regEmail) {
+      console.log("user: ", user);
+      findUser = user;
+    }
+  }
+  return findUser;
+}
 
 app.post("/urls/register", (req, res) => {
-  const newUserID = generateRandomString();
-  users[newUserID] = {
-    id: newUserID,
-    email: req.body.email,
-    password: req.body.password,
-  };
-  res.cookie("user_id", newUserID);
-  res.redirect(`/urls`);
+  //If the e-mail or password are empty strings, send back a response with the 400 status code.
+  if (!req.body.email || !req.body.password) {
+    res.status(400).send("Status Code: 400 - Email/password cannot be blank");
+  }
+
+  if (getUserByEmail(req.body.email) !== null) {
+    res.status(400).send("Status Code: 400 - User already exists");
+  } else {
+    const newUserID = generateRandomString();
+    users[newUserID] = {
+      id: newUserID,
+      email: req.body.email,
+      password: req.body.password,
+    };
+    res.cookie("user_id", newUserID);
+    res.redirect(`/urls`);
+  }
 });
+
+
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -47,7 +69,7 @@ app.get("/urls.json", (req, res) => {
 
 //renders table from urls_index template on /urls
 app.get("/urls", (req, res) => {
-  const userID = users[req.cookies['user_id']]
+  const userID = users[req.cookies['user_id']];
   console.log("userID: ", userID);
   const templateVars = {
     urls: urlDatabase,
@@ -60,7 +82,7 @@ app.get("/urls", (req, res) => {
 
 //render urls_new template
 app.get("/urls/new", (req, res) => {
-  const userID = users[req.cookies['user_id']]
+  const userID = users[req.cookies['user_id']];
   const templateVars = {
     username: req.cookies["username"],
     user: userID,
@@ -70,11 +92,11 @@ app.get("/urls/new", (req, res) => {
 
 //render urls_register template
 app.get("/urls/register", (req, res) => {
-  const userID = users[req.cookies['user_id']] 
+  const userID = users[req.cookies['user_id']];
   const templateVars = {
     username: req.cookies["username"],
     user: userID,
-  }
+  };
   res.render("urls_register", templateVars);
 });
 
@@ -95,7 +117,7 @@ app.get("/u/:id", (req, res) => {
 
 //renders shortURL ID edit page
 app.get("/urls/:id", (req, res) => {
-  const userID = users[req.cookies['user_id']] 
+  const userID = users[req.cookies['user_id']];
   const shortURL = req.params.id;
   const templateVars = {
     id: shortURL, longURL: urlDatabase[shortURL],
