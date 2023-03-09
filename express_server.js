@@ -108,6 +108,18 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${newURLID}`);
 });
 
+app.get("/login", (req, res) => {
+  const userID = users[req.cookies['user_id']];
+  const templateVars = {
+    username: req.cookies["username"],
+    user: userID,
+  };
+  if (userID) {
+    res.redirect("/urls");
+  }
+  res.render("urls_login", templateVars);
+});
+
 //redirects to the shortURL ID's longURL
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
