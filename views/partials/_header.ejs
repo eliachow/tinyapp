@@ -12,26 +12,26 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
+    <% if(username===undefined){ %>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <a class="nav-item nav-link" href="/login">Login</a>
+        <a class="nav-item nav-link" href="/urls/register">Register</a>
       </div>
     </div>
-    <% if(username === undefined){ %>
-      <form method="POST" action="/login">
-        <input type="text" placeholder="Username" name="username">
-        <button type="submit">Login</button>
-      </form>
     <% } else { %>
-      <h5>
-        <!-- Need to switch username to user.email once testing is complete. user.email causes code to break every time the server is restarted-->
-        <%=`Logged in as: ${username}`%> 
-      </h5>
+      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+          <a class="nav-item nav-link" href="/urls">My URLs</a>
+          <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        </div>
+      </div>
+      <h5>Logged in as: </h5>
       <form method="POST" action="/logout">
         <button type="submit">Logout</button>
       </form>
-      
     <% } %>
   </nav>
 </header>
