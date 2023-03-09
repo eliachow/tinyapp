@@ -12,25 +12,23 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-    <% if(username===undefined){ %>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+      </div>
+    </div>
+    <% if(username === undefined){ %>
+      <div class="navbar-nav">
         <a class="nav-item nav-link" href="/login">Login</a>
         <a class="nav-item nav-link" href="/urls/register">Register</a>
       </div>
-    </div>
     <% } else { %>
-      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-          <a class="nav-item nav-link" href="/urls">My URLs</a>
-          <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        </div>
-      </div>
-      <h5>Logged in as: </h5>
       <form method="POST" action="/logout">
-        <button type="submit">Logout</button>
+        <span>
+          <h5>Logged in as: </h5>
+          <button type="submit">Logout</button>
+        </span>
       </form>
     <% } %>
   </nav>
