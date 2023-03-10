@@ -22,7 +22,7 @@ const users = {
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: "abc",
   },
 };
 
@@ -34,8 +34,7 @@ function getUserByEmail(regEmail) {
   let findUser = null;
   for (const user in users) {
     if (users[user].email === regEmail) {
-      console.log("user: ", user);
-      findUser = user;
+      return users[user];
     }
   }
   return findUser;
@@ -43,11 +42,13 @@ function getUserByEmail(regEmail) {
 
 app.post("/urls/register", (req, res) => {
   //If the e-mail or password are empty strings, send back a response with the 400 status code.
-  if (!req.body.email || !req.body.password) {
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!email || !password) {
     res.status(400).send("Status Code: 400 - Email/password cannot be blank");
   }
 
-  if (getUserByEmail(req.body.email) !== null) {
+  if (getUserByEmail(email) !== null) {
     res.status(400).send("Status Code: 400 - User already exists");
   } else {
     const newUserID = generateRandomString();
@@ -61,41 +62,37 @@ app.post("/urls/register", (req, res) => {
   }
 });
 
-
-
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
 //renders table from urls_index template on /urls
 app.get("/urls", (req, res) => {
-  const userID = users[req.cookies['user_id']];
-  console.log("userID: ", userID);
+  const userID = req.cookies['user_id'];
+  const user = users[userID];
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"],
-    //userID output: { id: 'ti2ylu', email: 'test@example.com', password: 'newapssword' }
-    user: userID,
+    user,
   };
   res.render("urls_index", templateVars);
 });
 
 //render urls_new template
 app.get("/urls/new", (req, res) => {
-  const userID = users[req.cookies['user_id']];
+  const userID = req.cookies['user_id'];
+  const user = users[userID];
   const templateVars = {
-    username: req.cookies["username"],
-    user: userID,
+    user,
   };
   res.render("urls_new", templateVars);
 });
 
 //render urls_register template
 app.get("/urls/register", (req, res) => {
-  const userID = users[req.cookies['user_id']];
+  const userID = req.cookies['user_id'];
+  const user = users[userID];
   const templateVars = {
-    username: req.cookies["username"],
-    user: userID,
+    user,
   };
   res.render("urls_register", templateVars);
 });
@@ -109,13 +106,13 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const userID = users[req.cookies['user_id']];
+  const userID = req.cookies['user_id'];
+  const user = users[userID];
   const templateVars = {
-    username: req.cookies["username"],
-    user: userID,
+    user,
   };
-  if (userID) {
-    res.redirect("/urls");
+  if (user) {
+    return res.redirect("/urls");
   }
   res.render("urls_login", templateVars);
 });
@@ -129,12 +126,12 @@ app.get("/u/:id", (req, res) => {
 
 //renders shortURL ID edit page
 app.get("/urls/:id", (req, res) => {
-  const userID = users[req.cookies['user_id']];
   const shortURL = req.params.id;
+  const userID = req.cookies['user_id'];
+  const user = users[userID];
   const templateVars = {
     id: shortURL, longURL: urlDatabase[shortURL],
-    username: req.cookies["username"],
-    user: userID,
+    user,
   };
   res.render("urls_show", templateVars);
 });
@@ -154,24 +151,26 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+  const user = getUserByEmail(userEmail);
+
+  if (!user) {
+    res.status(403).send("Status Code: 403 - Email cannot be found");
+  }
+
+  if (user.password !== userPassword) {
+    res.status(403).send("Status Code: 403 - Incorrect password");
+  }
+ 
+  res.cookie("user_id", user.id);
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username', req.body.username);
-  res.redirect("/urls");
+  res.clearCookie('user_id');
+  res.redirect("/login");
 });
-
-// //renders hello on root page
-// app.get("/", (req, res) => {
-//   res.send("Hello!");
-// });
-
-// //renders Hello World on hello page
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b><body></html>\n");
-// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
