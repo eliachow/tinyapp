@@ -12,15 +12,32 @@
   <title>TinyApp Register</title>
 </head>
 <body>
+
   <%- include('partials/_header') %>
-
-  <h3>TinyURL Registration</h3>
-
+  </br>
+  <div class="col">
+    <h2>Create Account</h2>
+  </div>
   <form method="POST" action="/urls/register">
-    <input type="email" name="email" placeholder="Email">
-    <input type="password" name="password" placeholder="Create password">
-    <button type="submit">Submit</button>
+    <div class="col-4">
+      <label for="email" class="form-label"><strong>Email address</strong></label>
+      <input type="email" name="email" placeholder="Enter email" class="form-control">
+    </div>
+  </br>
+    <div class="col-4">
+      <label for="password" class="form-label"><strong>Password</strong></label>
+      <input type="password" name="password" placeholder="Create password" class="form-control">
+    </div>
+  </br>
+    <div class="col">
+      <button type="submit" class="btn btn-primary">Register</button>
+    </div>  
   </form>
+</br>
+  <div class="col">
+    <h5>Already a member?</h5>
+    <a class="nav-item nav-link" href="/login">Login here!</a>
+  </div>
 
 
 
