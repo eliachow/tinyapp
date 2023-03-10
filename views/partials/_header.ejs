@@ -18,7 +18,7 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if(username === undefined){ %>
+    <% if(!user){ %>
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/login">Login</a>
         <a class="nav-item nav-link" href="/urls/register">Register</a>
@@ -26,8 +26,8 @@
     <% } else { %>
       <form method="POST" action="/logout">
         <span>
-          <h5>Logged in as: </h5>
-          <button type="submit">Logout</button>
+          <h5>Logged in as: <%= user.email %></h5>
+          <button type="submit" class="btn btn-secondary">Logout</button>
         </span>
       </form>
     <% } %>
