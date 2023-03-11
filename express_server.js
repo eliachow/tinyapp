@@ -9,8 +9,14 @@ app.use(cookieParser());
 
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 const users = {
@@ -120,7 +126,10 @@ app.post("/urls", (req, res) => {
   //creates random shortURL ID for input long URL
   //redirects to new shortURL ID edit page
   const newURLID = generateRandomString();
-  urlDatabase[newURLID] = req.body.longURL;
+  urlDatabase[newURLID] = {
+    longURL: req.body.longURL,
+    userID: userID,
+  };
   res.redirect(`/urls/${newURLID}`);
 });
 
@@ -131,6 +140,8 @@ app.get("/login", (req, res) => {
   const templateVars = {
     user,
   };
+  
+  //check if user exists, rediret to /urls
   if (user) {
     return res.redirect("/urls");
   }
@@ -140,11 +151,12 @@ app.get("/login", (req, res) => {
 //redirects to the shortURL ID's longURL
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
+  console.log("🎈longURL: ", longURL);
 
   //check that URL ID is in the database and redirect to the long URL
   if (urlDatabase[shortURL]) {
-    res.redirect(longURL);
+    return res.redirect(longURL);
   }
   //if URL is not in the database, send message
   res.send("URL does not exist");
@@ -157,7 +169,7 @@ app.get("/urls/:id", (req, res) => {
   const user = users[userID];
   const templateVars = {
     id: shortURL,
-    longURL: urlDatabase[shortURL],
+    longURL: urlDatabase[shortURL].longURL,
     user,
   };
   res.render("urls_show", templateVars);
@@ -167,7 +179,8 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   //updates longURL with edited input url
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL].longURL = req.body.longURL;
+  console.log("🎈urlDatabse: ", urlDatabase);
 
   res.redirect("/urls");
 });
