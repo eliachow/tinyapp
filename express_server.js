@@ -74,6 +74,12 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     user,
   };
+
+  //if user is not logged in redirect to GET/login
+  if (!user) {
+    res.redirect("/login");
+  }
+
   res.render("urls_index", templateVars);
 });
 
@@ -84,6 +90,12 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     user,
   };
+
+  //if user is not logged in redirect to GET/login
+  if (!user) {
+    res.redirect("/login");
+  }
+
   res.render("urls_new", templateVars);
 });
 
@@ -97,14 +109,22 @@ app.get("/urls/register", (req, res) => {
   res.render("urls_register", templateVars);
 });
 
-//creates random shortURL ID for input long URL
-//redirects to new shortURL ID edi page
+
 app.post("/urls", (req, res) => {
+  //if not logged in, send message
+  const userID = req.cookies['user_id'];
+  if (!userID) {
+    return res.send("You must be logged in to create a URL");
+  }
+
+  //creates random shortURL ID for input long URL
+  //redirects to new shortURL ID edit page
   const newURLID = generateRandomString();
   urlDatabase[newURLID] = req.body.longURL;
   res.redirect(`/urls/${newURLID}`);
 });
 
+//render login page
 app.get("/login", (req, res) => {
   const userID = req.cookies['user_id'];
   const user = users[userID];
@@ -121,7 +141,13 @@ app.get("/login", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL];
-  res.redirect(longURL);
+
+  //check that URL ID is in the database and redirect to the long URL
+  if (urlDatabase[shortURL]) {
+    res.redirect(longURL);
+  }
+  //if URL is not in the database, send message
+  res.send("URL does not exist");
 });
 
 //renders shortURL ID edit page
@@ -130,16 +156,19 @@ app.get("/urls/:id", (req, res) => {
   const userID = req.cookies['user_id'];
   const user = users[userID];
   const templateVars = {
-    id: shortURL, longURL: urlDatabase[shortURL],
+    id: shortURL,
+    longURL: urlDatabase[shortURL],
     user,
   };
   res.render("urls_show", templateVars);
 });
 
-//updates longURL with edited input url
+
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
+  //updates longURL with edited input url
   urlDatabase[shortURL] = req.body.longURL;
+
   res.redirect("/urls");
 });
 
