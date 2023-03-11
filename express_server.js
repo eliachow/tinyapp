@@ -46,6 +46,21 @@ function getUserByEmail(regEmail) {
   return findUser;
 }
 
+//return an object of the user's URLs
+function urlsForUser(id) {
+  let userURLs = {};
+  for (const urlID in urlDatabase) {
+    if (urlDatabase[urlID].userID === id) {
+      userURLs[urlID] = {
+        longURL: urlDatabase[urlID].longURL,
+        userID: urlDatabase[urlID].userID,
+      } 
+    }
+  }
+  return userURLs
+}
+
+
 app.post("/urls/register", (req, res) => {
   //If the e-mail or password are empty strings, send back a response with the 400 status code.
   const email = req.body.email;
@@ -72,18 +87,21 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-//renders table from urls_index template on /urls
+//renders table of URLs for specific user
 app.get("/urls", (req, res) => {
   const userID = req.cookies['user_id'];
   const user = users[userID];
   const templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(userID),
     user,
   };
 
-  //if user is not logged in redirect to GET/login
   if (!user) {
-    res.redirect("/login");
+    //Return error message if not logged in
+    res.send("Please login to view URLs");
+    
+    //if user is not logged in redirect to GET/login
+    // res.redirect("/login");
   }
 
   res.render("urls_index", templateVars);
