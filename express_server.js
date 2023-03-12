@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const cookieSession = require('cookie-session');
+const getUserByEmail = require('./helpers');
 const app = express();
 const PORT = 8080; //default port 8080
 
@@ -45,16 +46,7 @@ function generateRandomString() {
   return Math.random().toString(36).substring(2,8);
 }
 
-//returns user object of email agrument
-function getUserByEmail(regEmail) {
-  let findUser = null;
-  for (const user in users) {
-    if (users[user].email === regEmail) {
-      return users[user];
-    }
-  }
-  return findUser;
-}
+
 
 //return an object of the user's URLs
 function urlsForUser(id) {
@@ -82,7 +74,7 @@ app.post("/register", (req, res) => {
   }
 
   //check if user exists before creating user
-  if (getUserByEmail(email) !== null) {
+  if (getUserByEmail(email, users) !== null) {
     res.status(400).send("Status Code: 400 - User already exists");
   } else {
     const newUserID = generateRandomString();
@@ -114,7 +106,7 @@ app.get("/urls", (req, res) => {
     //Return error message if not logged in
     res.send("Please login to view URLs");
   }
-  console.log("🎈user: ", user);
+  
   res.render("urls_index", templateVars);
 });
 
@@ -276,7 +268,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/login", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
-  const user = getUserByEmail(userEmail);
+  const user = getUserByEmail(userEmail, users);
 
   //check if user exists
   if (!user) {
