@@ -1,11 +1,9 @@
 const express = require("express");
+const bcrypt = require("bcryptjs");
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; //default port 8080
-const cookieParser = require('cookie-parser');
 
-// const bcrypt = require("bcryptjs");
-// const password = "purple-monkey-dinosaur"; // found in the req.body object
-// const hashedPassword = bcrypt.hashSync(password, 10);
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
@@ -66,16 +64,18 @@ function urlsForUser(id) {
   return userURLs;
 }
 
-
+//create user
 app.post("/urls/register", (req, res) => {
-  //If the e-mail or password are empty strings, send back a response with the 400 status code.
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   
-  if (!email || !password) {
+  //check if fields are empty
+  if (!email || !hashedPassword) {
     res.status(400).send("Status Code: 400 - Email/password cannot be blank");
   }
 
+  //check if user exists before creating user
   if (getUserByEmail(email) !== null) {
     res.status(400).send("Status Code: 400 - User already exists");
   } else {
@@ -83,8 +83,9 @@ app.post("/urls/register", (req, res) => {
     users[newUserID] = {
       id: newUserID,
       email: req.body.email,
-      password: req.body.password,
+      password: hashedPassword,
     };
+  
     res.cookie("user_id", newUserID);
     res.redirect(`/urls`);
   }
@@ -261,7 +262,7 @@ app.post("/urls/:id/delete", (req, res) => {
     return res.status(404).send("Page not found");
   }
 
-  
+
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
@@ -271,16 +272,16 @@ app.post("/login", (req, res) => {
   const userPassword = req.body.password;
   const user = getUserByEmail(userEmail);
 
+  //check if user exists
   if (!user) {
     res.status(403).send("Status Code: 403 - Email cannot be found");
   }
 
   //verify password
-  if (user.password !== userPassword) {
-    res.status(403).send("Status Code: 403 - Incorrect password");
+  if (!bcrypt.compareSync(userPassword, user.password)) {
+    res.status(403).send("Incorrect password");
   }
 
- 
   res.cookie("user_id", user.id);
   res.redirect("/urls");
 });
