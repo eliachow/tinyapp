@@ -2,7 +2,6 @@
 function getUserByEmail(email, database) {
   let findUser = null;
   for (const user in database) {
-    console.log("🎈user: ", user);
     if (database[user].email === email) {
       return database[user];
     }
@@ -11,4 +10,4 @@ function getUserByEmail(email, database) {
 }
 
 
-module.exports = getUserByEmail;
+module.exports = { getUserByEmail };
