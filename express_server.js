@@ -1,7 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const cookieSession = require('cookie-session');
-const getUserByEmail = require('./helpers');
+const { getUserByEmail, generateRandomString } = require('./helpers');
 const app = express();
 const PORT = 8080; //default port 8080
 
@@ -40,12 +40,6 @@ const users = {
     password: bcrypt.hashSync("abc", 10),
   },
 };
-
-//returns 6 digit alphanumeric string
-function generateRandomString() {
-  return Math.random().toString(36).substring(2,8);
-}
-
 
 
 //return an object of the user's URLs
@@ -259,7 +253,6 @@ app.post("/urls/:id/delete", (req, res) => {
   if (!urlDatabase[shortURL]) {
     return res.status(404).send("Page not found");
   }
-
 
   delete urlDatabase[shortURL];
   res.redirect("/urls");

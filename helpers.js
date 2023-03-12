@@ -9,5 +9,13 @@ function getUserByEmail(email, database) {
   return findUser;
 }
 
+//returns 6 digit alphanumeric string
+function generateRandomString() {
+  return Math.random().toString(36).substring(2,8);
+}
 
-module.exports = { getUserByEmail };
+
+module.exports = {
+  getUserByEmail,
+  generateRandomString,
+};
