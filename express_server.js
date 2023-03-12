@@ -3,6 +3,10 @@ const app = express();
 const PORT = 8080; //default port 8080
 const cookieParser = require('cookie-parser');
 
+// const bcrypt = require("bcryptjs");
+// const password = "purple-monkey-dinosaur"; // found in the req.body object
+// const hashedPassword = bcrypt.hashSync(password, 10);
+
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -32,10 +36,12 @@ const users = {
   },
 };
 
+//returns 6 digit alphanumeric string
 function generateRandomString() {
   return Math.random().toString(36).substring(2,8);
 }
 
+//returns user object of email agrument
 function getUserByEmail(regEmail) {
   let findUser = null;
   for (const user in users) {
@@ -65,6 +71,7 @@ app.post("/urls/register", (req, res) => {
   //If the e-mail or password are empty strings, send back a response with the 400 status code.
   const email = req.body.email;
   const password = req.body.password;
+  
   if (!email || !password) {
     res.status(400).send("Status Code: 400 - Email/password cannot be blank");
   }
@@ -99,9 +106,6 @@ app.get("/urls", (req, res) => {
   if (!user) {
     //Return error message if not logged in
     res.send("Please login to view URLs");
-    
-    //if user is not logged in redirect to GET/login
-    // res.redirect("/login");
   }
 
   res.render("urls_index", templateVars);
@@ -120,6 +124,7 @@ app.get("/urls/new", (req, res) => {
     res.redirect("/login");
   }
 
+  //if logged in render create URL page
   res.render("urls_new", templateVars);
 });
 
@@ -142,12 +147,13 @@ app.post("/urls", (req, res) => {
   }
 
   //creates random shortURL ID for input long URL
-  //redirects to new shortURL ID edit page
   const newURLID = generateRandomString();
   urlDatabase[newURLID] = {
     longURL: req.body.longURL,
     userID: userID,
   };
+
+  //redirects to new shortURL ID edit page
   res.redirect(`/urls/${newURLID}`);
 });
 
@@ -170,7 +176,6 @@ app.get("/login", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL].longURL;
-  console.log("🎈longURL: ", longURL);
 
   //check that URL ID is in the database and redirect to the long URL
   if (urlDatabase[shortURL]) {
@@ -185,21 +190,27 @@ app.get("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   const userID = req.cookies['user_id'];
   const user = users[userID];
-  const templateVars = {
-    id: shortURL,
-    longURL: urlDatabase[shortURL].longURL,
-    user,
-  };
-  
+
   //check if user is logged on
   if (!user) {
-    return res.statu(401).send("Please login to view edit page");
+    return res.status(401).send("Please login to view edit page");
+  }
+
+  //check if shortURL exists
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("Page not found");
   }
 
   //check if the shortURL userID matches the logged in userID
   if (userID !== urlDatabase[shortURL].userID) {
     return res.status(401).send("You are not authorized to access this page");
   }
+
+  const templateVars = {
+    id: shortURL,
+    longURL: urlDatabase[shortURL].longURL,
+    user,
+  };
 
   res.render("urls_show", templateVars);
 });
@@ -219,12 +230,15 @@ app.post("/urls/:id", (req, res) => {
     return res.status(401).send("You are not authorized to access the edit page");
   }
 
-  //check if shortURL exists, status code 404
+  //check if shortURL exists
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("Page not found");
+  }
 
-  //updates longURL with edited input url
+  //updates longURL with edited input url and redirect to URL index page
   urlDatabase[shortURL].longURL = req.body.longURL;
-
   res.redirect("/urls");
+  
 });
 
 //when the delete button is submitted the URL is deleted
@@ -242,8 +256,12 @@ app.post("/urls/:id/delete", (req, res) => {
     return res.status(401).send("You are not authorized to access the delete page");
   }
 
-  //check if short URL exists, status code 404
+  //check if shortURL exists
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("Page not found");
+  }
 
+  
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
@@ -257,9 +275,11 @@ app.post("/login", (req, res) => {
     res.status(403).send("Status Code: 403 - Email cannot be found");
   }
 
+  //verify password
   if (user.password !== userPassword) {
     res.status(403).send("Status Code: 403 - Incorrect password");
   }
+
  
   res.cookie("user_id", user.id);
   res.redirect("/urls");
