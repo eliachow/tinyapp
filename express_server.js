@@ -15,7 +15,7 @@ const urlDatabase = {
   },
   i3BoGr: {
     longURL: "https://www.google.ca",
-    userID: "aJ48lW",
+    userID: "user2RandomID",
   },
 };
 
@@ -54,10 +54,10 @@ function urlsForUser(id) {
       userURLs[urlID] = {
         longURL: urlDatabase[urlID].longURL,
         userID: urlDatabase[urlID].userID,
-      } 
+      };
     }
   }
-  return userURLs
+  return userURLs;
 }
 
 
@@ -176,11 +176,11 @@ app.get("/u/:id", (req, res) => {
   if (urlDatabase[shortURL]) {
     return res.redirect(longURL);
   }
-  //if URL is not in the database, send message
+  //if URL is not in the database, send message + 404 status code
   res.send("URL does not exist");
 });
 
-//renders shortURL ID edit page
+//renders shortURL ID edit page if user is logged in
 app.get("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   const userID = req.cookies['user_id'];
@@ -190,15 +190,39 @@ app.get("/urls/:id", (req, res) => {
     longURL: urlDatabase[shortURL].longURL,
     user,
   };
+  
+  //check if user is logged on
+  if (!user) {
+    return res.statu(401).send("Please login to view edit page");
+  }
+
+  //check if the shortURL userID matches the logged in userID
+  if (userID !== urlDatabase[shortURL].userID) {
+    return res.status(401).send("You are not authorized to access this page");
+  }
+
   res.render("urls_show", templateVars);
 });
 
 
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
+  const userID = req.cookies['user_id'];
+  
+  //check if user is logged on
+  if (!userID) {
+    return res.status(401).send("Please login edit long URLs");
+  }
+
+  //check if the shortURL userID matches the logged in userID
+  if (userID !== urlDatabase[shortURL].userID) {
+    return res.status(401).send("You are not authorized to access the edit page");
+  }
+
+  //check if shortURL exists, status code 404
+
   //updates longURL with edited input url
   urlDatabase[shortURL].longURL = req.body.longURL;
-  console.log("🎈urlDatabse: ", urlDatabase);
 
   res.redirect("/urls");
 });
@@ -206,6 +230,20 @@ app.post("/urls/:id", (req, res) => {
 //when the delete button is submitted the URL is deleted
 app.post("/urls/:id/delete", (req, res) => {
   const shortURL = req.params.id;
+  const userID = req.cookies['user_id'];
+  
+  //check if user is logged on
+  if (!userID) {
+    return res.status(401).send("Please login to delete URLs");
+  }
+
+  //check if shortURL userID matches the logged in userID
+  if (userID !== urlDatabase[shortURL].userID) {
+    return res.status(401).send("You are not authorized to access the delete page");
+  }
+
+  //check if short URL exists, status code 404
+
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
